@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import type { ShopCategory } from "@/lib/catalog";
+import { isImageBroken, markImageBroken } from "@/lib/broken-images";
 
 const TILE_LAYOUT: string[] = [
   "md:col-span-7 md:mt-0",
@@ -21,6 +23,9 @@ function CategoryTile({
   category: ShopCategory;
   priority?: boolean;
 }) {
+  const [hidden, setHidden] = useState(() => isImageBroken(category.image));
+  if (hidden) return null;
+
   return (
     <Link href={category.href} className="group relative block w-full">
       <div className="relative overflow-hidden bg-border transition-transform duration-700 ease-out active:scale-[0.985] md:group-hover:scale-[1.01]">
@@ -33,6 +38,10 @@ function CategoryTile({
           quality={90}
           sizes="(max-width: 768px) 100vw, 45vw"
           className="h-auto w-full object-contain grayscale contrast-[1.05] transition-[filter,transform] duration-700 ease-out group-active:grayscale-0 group-active:contrast-100 md:group-hover:scale-[1.015] md:group-hover:grayscale-0 md:group-hover:contrast-100"
+          onError={() => {
+            markImageBroken(category.image);
+            setHidden(true);
+          }}
         />
 
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-85 transition-opacity duration-500 group-active:opacity-55 md:group-hover:opacity-55" />

@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart/CartProvider";
-import type { CatalogProduct } from "@/lib/catalog";
+import { GiftCardVisual } from "@/components/GiftCardVisual";
+import { isGiftCard, type CatalogProduct } from "@/lib/catalog";
+import { markImageBroken } from "@/lib/broken-images";
 import { formatPriceBob } from "@/lib/format";
 
 type OptionChoice = {
@@ -18,22 +21,29 @@ type OptionGroup = {
   options?: OptionChoice[];
 };
 
+const GIFT_BLURB =
+  "La forma más cute de regalar Simplicity. Canjeable en tienda por la prenda que elijan — XOXO.";
+
 export function ProductGallery({ product }: { product: CatalogProduct }) {
+  const router = useRouter();
   const { addItem } = useCart();
-  const images = product.images.length > 0 ? product.images : [];
+  const gift = isGiftCard(product);
+  const images = !gift && product.images.length > 0 ? product.images : [];
   const [active, setActive] = useState(0);
-  const current = images[active] ?? images[0];
+  const [failed, setFailed] = useState<Set<number>>(() => new Set());
+  const current = images.find((_, i) => i >= active && !failed.has(i))
+    ?? images.find((_, i) => !failed.has(i));
   const outOfStock = product.type === "unavailable";
 
   const groups = product.options as OptionGroup[];
   const firstGroup = groups[0];
   const enabledChoices = useMemo(
     () => (firstGroup?.options ?? []).filter((opt) => opt.enabled !== false),
-    [firstGroup]
+    [firstGroup],
   );
 
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
-    enabledChoices[0]?.id ?? null
+    enabledChoices[0]?.id ?? null,
   );
 
   const selectedOption =
@@ -47,13 +57,53 @@ export function ProductGallery({ product }: { product: CatalogProduct }) {
     addItem({
       productId: product.id,
       slug: product.slug,
-      title: product.title,
+      title: gift
+        ? `Gift Card · ${formatPriceBob(product.price).replace(/\.00$/, "")}`
+        : product.title,
       price: unitPrice,
-      image: product.images[0] ?? "",
+      image: gift ? "" : (product.images[0] ?? ""),
       optionLabel: selectedOption?.title.trim(),
       optionId: selectedOption?.id,
     });
   };
+
+  if (gift) {
+    return (
+      <div className="mx-auto flex w-full max-w-lg flex-col gap-8 sm:gap-10">
+        <div className="relative aspect-8/5 w-full overflow-hidden">
+          <GiftCardVisual
+            amount={product.price}
+            size="hero"
+            className="absolute inset-0"
+          />
+        </div>
+
+        <div className="text-center">
+          <p className="text-[10px] font-light uppercase tracking-[0.28em] text-muted">
+            Gift Cards
+          </p>
+          <h1 className="mt-3 font-display text-3xl tracking-tight text-foreground sm:text-4xl">
+            Gift Card · {formatPriceBob(product.price).replace(/\.00$/, "")}
+          </h1>
+          <p className="mt-3 text-sm font-light tracking-wide text-muted">
+            {outOfStock ? "Sin stock" : formatPriceBob(unitPrice)}
+          </p>
+          <p className="mx-auto mt-5 max-w-sm text-sm font-light leading-relaxed text-muted">
+            {product.description || GIFT_BLURB}
+          </p>
+
+          <button
+            type="button"
+            disabled={outOfStock}
+            onClick={handleAdd}
+            className="mt-8 inline-flex h-12 w-full items-center justify-center bg-foreground text-[11px] font-light uppercase tracking-[0.22em] text-background transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35 sm:mx-auto sm:w-auto sm:px-12"
+          >
+            {outOfStock ? "Sin stock" : "Agregar a la bolsa"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
@@ -68,31 +118,53 @@ export function ProductGallery({ product }: { product: CatalogProduct }) {
               quality={90}
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
+              onError={() => {
+                markImageBroken(current);
+                const idx = images.indexOf(current);
+                setFailed((prev) => {
+                  const next = new Set(prev);
+                  if (idx >= 0) next.add(idx);
+                  if (next.size >= images.length) {
+                    router.replace("/");
+                  } else {
+                    setActive((a) => a + 1);
+                  }
+                  return next;
+                });
+              }}
             />
           ) : null}
         </div>
 
         {images.length > 1 ? (
           <div className="mt-3 flex gap-2 overflow-x-auto scrollbar-none">
-            {images.map((src, index) => (
-              <button
-                key={src}
-                type="button"
-                onClick={() => setActive(index)}
-                aria-label={`Ver imagen ${index + 1}`}
-                className={`relative h-20 w-16 shrink-0 overflow-hidden bg-border transition-opacity ${
-                  index === active ? "opacity-100" : "opacity-45 hover:opacity-75"
-                }`}
-              >
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  sizes="64px"
-                  className="object-cover"
-                />
-              </button>
-            ))}
+            {images.map((src, index) =>
+              failed.has(index) ? null : (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setActive(index)}
+                  aria-label={`Ver imagen ${index + 1}`}
+                  className={`relative h-20 w-16 shrink-0 overflow-hidden bg-border transition-opacity ${
+                    index === active
+                      ? "opacity-100"
+                      : "opacity-45 hover:opacity-75"
+                  }`}
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                    onError={() => {
+                      markImageBroken(src);
+                      setFailed((prev) => new Set(prev).add(index));
+                    }}
+                  />
+                </button>
+              ),
+            )}
           </div>
         ) : null}
       </div>

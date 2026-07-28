@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { GiftCardVisual } from "@/components/GiftCardVisual";
 import type { SearchResult } from "@/lib/catalog";
 import { formatPriceBob } from "@/lib/format";
 import {
@@ -11,6 +12,7 @@ import {
   getStoredCatalogVersion,
   setCachedSearch,
 } from "@/lib/search-client-cache";
+import { isImageBroken, markImageBroken } from "@/lib/broken-images";
 
 type Props = {
   open: boolean;
@@ -37,6 +39,7 @@ export function SearchOverlay({ open, onClose }: Props) {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<SearchResult>(emptyResult);
   const [loading, setLoading] = useState(false);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     if (!open) return;
@@ -61,6 +64,7 @@ export function SearchOverlay({ open, onClose }: Props) {
       setQuery("");
       setResult(emptyResult);
       setLoading(false);
+      setHiddenIds(new Set());
     }
   }, [open]);
 
@@ -122,9 +126,18 @@ export function SearchOverlay({ open, onClose }: Props) {
   const hasQuery = query.trim().length > 0;
   const resultMatchesQuery =
     result.query.trim().toLowerCase() === query.trim().toLowerCase();
+  const visibleProducts = result.products.filter((p) => {
+    if (hiddenIds.has(p.id)) return false;
+    const isGift =
+      p.category.toUpperCase() === "GIFT CARDS" ||
+      /gift\s*card/i.test(p.title);
+    if (isGift) return true;
+    if (!p.image || isImageBroken(p.image)) return false;
+    return true;
+  });
   const hasHits =
     resultMatchesQuery &&
-    (result.categories.length > 0 || result.products.length > 0);
+    (result.categories.length > 0 || visibleProducts.length > 0);
   const showLoading = hasQuery && !resultMatchesQuery;
 
   return (
@@ -217,27 +230,47 @@ export function SearchOverlay({ open, onClose }: Props) {
                 </section>
               ) : null}
 
-              {result.products.length > 0 ? (
+              {visibleProducts.length > 0 ? (
                 <section>
                   <h2 className="text-[10px] font-light uppercase tracking-[0.28em] text-muted">
                     Prendas
                   </h2>
                   <ul className="mt-3 space-y-3">
-                    {result.products.map((product) => (
+                    {visibleProducts.map((product) => (
                       <li key={product.id}>
                         <Link
                           href={product.href}
                           onClick={onClose}
                           className="flex items-center gap-4 py-1 transition-opacity hover:opacity-55"
                         >
-                          <span className="relative h-16 w-12 shrink-0 overflow-hidden bg-border">
-                            {product.image ? (
+                          <span
+                            className={`relative shrink-0 overflow-hidden bg-border ${
+                              product.category.toUpperCase() === "GIFT CARDS" ||
+                              /gift\s*card/i.test(product.title)
+                                ? "h-12 w-20"
+                                : "h-16 w-12"
+                            }`}
+                          >
+                            {product.category.toUpperCase() === "GIFT CARDS" ||
+                            /gift\s*card/i.test(product.title) ? (
+                              <GiftCardVisual
+                                amount={product.price}
+                                size="thumb"
+                                className="absolute inset-0"
+                              />
+                            ) : product.image ? (
                               <Image
                                 src={product.image}
                                 alt=""
                                 fill
-                                sizes="48px"
+                                sizes="80px"
                                 className="object-cover"
+                                onError={() => {
+                                  markImageBroken(product.image);
+                                  setHiddenIds((prev) =>
+                                    new Set(prev).add(product.id),
+                                  );
+                                }}
                               />
                             ) : null}
                           </span>

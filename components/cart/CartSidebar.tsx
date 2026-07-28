@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, X } from "lucide-react";
 import { useEffect } from "react";
 import { useCart } from "@/components/cart/CartProvider";
+import { GiftCardVisual } from "@/components/GiftCardVisual";
 import { formatPriceBob } from "@/lib/format";
 
 const WHATSAPP = "https://wa.me/59177957266";
@@ -117,15 +118,25 @@ export function CartSidebar() {
                   <Link
                     href={`/producto/${item.slug}`}
                     onClick={closeCart}
-                    className="relative h-24 w-20 shrink-0 overflow-hidden bg-border"
+                    className={`relative shrink-0 overflow-hidden bg-border ${
+                      /gift/i.test(item.title)
+                        ? "h-14 w-24"
+                        : "h-24 w-20"
+                    }`}
                   >
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt={item.title}
                         fill
-                        sizes="80px"
+                        sizes="96px"
                         className="object-cover"
+                      />
+                    ) : /gift/i.test(item.title) ? (
+                      <GiftCardVisual
+                        amount={item.price}
+                        size="thumb"
+                        className="absolute inset-0"
                       />
                     ) : null}
                   </Link>

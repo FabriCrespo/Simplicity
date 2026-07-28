@@ -35,6 +35,7 @@ export default async function CategoryPage({ params }: Props) {
   if (!category) notFound();
 
   const products = getProductsByCategory(category.name);
+  const isGiftCategory = category.name.toUpperCase() === "GIFT CARDS";
 
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -62,7 +63,13 @@ export default async function CategoryPage({ params }: Props) {
           Pronto más piezas en esta categoría.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-14">
+        <div
+          className={
+            isGiftCategory
+              ? "mx-auto grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8"
+              : "grid grid-cols-2 gap-x-3 gap-y-10 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-14"
+          }
+        >
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

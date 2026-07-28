@@ -1,5 +1,6 @@
 import products from "@/data/products.json";
 import categoriesData from "@/data/categories.json";
+import { formatPriceBob } from "@/lib/format";
 
 export type CatalogProduct = {
   id: string;
@@ -121,7 +122,9 @@ export function getFeaturedProducts(): CatalogProduct[] {
 
   featuredCache = FEATURED_TITLES.map((title) => {
     const matches = catalog.filter(
-      (p) => p.title.trim().toLowerCase() === title.toLowerCase(),
+      (p) =>
+        p.title.trim().toLowerCase() === title.toLowerCase() &&
+        hasProductMedia(p),
     );
     return pickBestMatch(matches);
   }).filter((p): p is CatalogProduct => Boolean(p));
@@ -275,13 +278,35 @@ export function getCategoryBySlug(slug: string) {
   };
 }
 
+export function isGiftCard(product: Pick<CatalogProduct, "category" | "title">) {
+  return (
+    product.category.toUpperCase() === "GIFT CARDS" ||
+    /^gc\b/i.test(product.title.trim()) ||
+    /gift\s*card/i.test(product.title)
+  );
+}
+
+/** Gift cards are fine without photos; everything else needs at least one image URL. */
+export function hasProductMedia(
+  product: Pick<CatalogProduct, "category" | "title" | "images">,
+) {
+  if (isGiftCard(product)) return true;
+  return product.images.some(
+    (url) => typeof url === "string" && url.trim().length > 0,
+  );
+}
+
 export function getProductsByCategory(categoryName: string): CatalogProduct[] {
   const list = productsByCategoryName.get(categoryName) ?? [];
-  return list.filter((p) => p.type !== "hidden" && p.images.length > 0);
+
+  return list.filter((p) => p.type !== "hidden" && hasProductMedia(p));
 }
 
 export function getProductBySlug(slug: string): CatalogProduct | null {
-  return productBySlug.get(slug) ?? null;
+  const product = productBySlug.get(slug) ?? null;
+  if (!product || product.type === "hidden") return null;
+  if (!hasProductMedia(product)) return null;
+  return product;
 }
 
 export function getAllCategorySlugs(): string[] {
@@ -289,7 +314,9 @@ export function getAllCategorySlugs(): string[] {
 }
 
 export function getAllProductSlugs(): string[] {
-  return catalog.filter((p) => p.type !== "hidden").map((p) => p.slug);
+  return catalog
+    .filter((p) => p.type !== "hidden" && hasProductMedia(p))
+    .map((p) => p.slug);
 }
 
 export function getCategorySlugForName(name: string): string {
@@ -350,7 +377,7 @@ export function searchCatalog(query: string, limit = 24): SearchResult {
     .slice(0, 8);
 
   const products = searchDocs
-    .filter((doc) => productDocMatches(doc, q))
+    .filter((doc) => hasProductMedia(doc.product) && productDocMatches(doc, q))
     .sort((a, b) => {
       const score = (doc: SearchDoc) => {
         if (doc.titleNorm === q) return 4;
@@ -372,10 +399,12 @@ export function searchCatalog(query: string, limit = 24): SearchResult {
     .map(({ product: p }) => ({
       id: p.id,
       slug: p.slug,
-      title: p.title,
+      title: isGiftCard(p)
+        ? `Gift Card · ${formatPriceBob(p.price).replace(/\.00$/, "")}`
+        : p.title,
       category: p.category,
       price: p.price,
-      image: p.images[0] ?? "",
+      image: isGiftCard(p) ? "" : (p.images[0] ?? ""),
       type: p.type,
       href: `/producto/${p.slug}`,
     }));

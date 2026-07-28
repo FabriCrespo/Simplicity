@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogProduct } from "@/lib/catalog";
+import { isImageBroken, markImageBroken } from "@/lib/broken-images";
 import { formatPriceBob } from "@/lib/format";
 
 const HOLD_MS = 1800;
@@ -18,17 +19,31 @@ export function FeaturedCarousel({ products }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const count = products.length;
+  const [brokenIds, setBrokenIds] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    for (const p of products) {
+      const img = p.images[0];
+      if (!img || isImageBroken(img)) initial.add(p.id);
+    }
+    return initial;
+  });
+
+  const visible = useMemo(
+    () => products.filter((p) => !brokenIds.has(p.id) && p.images[0]),
+    [products, brokenIds],
+  );
+
+  const count = visible.length;
 
   const loop = useMemo(
-    () => [...products, ...products, ...products],
-    [products]
+    () => (count ? [...visible, ...visible, ...visible] : []),
+    [visible, count],
   );
 
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior) => {
     const root = scrollerRef.current;
     const el = root?.querySelector<HTMLElement>(
-      `[data-carousel-index="${index}"]`
+      `[data-carousel-index="${index}"]`,
     );
     if (!root || !el) return;
 
@@ -141,7 +156,9 @@ export function FeaturedCarousel({ products }: Props) {
             >
               <div
                 className={`relative aspect-3/4 overflow-hidden bg-border transition-shadow duration-500 ${
-                  isActive ? "shadow-[0_18px_40px_-24px_rgba(0,0,0,0.55)]" : ""
+                  isActive
+                    ? "shadow-[0_18px_40px_-24px_rgba(0,0,0,0.55)]"
+                    : ""
                 }`}
               >
                 {image ? (
@@ -153,6 +170,10 @@ export function FeaturedCarousel({ products }: Props) {
                     className={`object-cover transition-[filter,transform] duration-500 ease-out ${
                       isActive ? "grayscale-0" : "grayscale"
                     } group-hover:scale-[1.03]`}
+                    onError={() => {
+                      markImageBroken(image);
+                      setBrokenIds((prev) => new Set(prev).add(product.id));
+                    }}
                   />
                 ) : null}
                 {outOfStock ? (

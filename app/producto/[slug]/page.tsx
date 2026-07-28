@@ -6,7 +6,9 @@ import {
   getAllProductSlugs,
   getCategorySlugForName,
   getProductBySlug,
+  isGiftCard,
 } from "@/lib/catalog";
+import { formatPriceBob } from "@/lib/format";
 
 export const dynamic = "force-static";
 export const revalidate = false;
@@ -37,17 +39,25 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const categorySlug = getCategorySlugForName(product.category);
+  const gift = isGiftCard(product);
+  const crumbLabel = gift
+    ? `Gift Card · ${formatPriceBob(product.price).replace(/\.00$/, "")}`
+    : product.title;
 
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+    <div
+      className={`mx-auto w-full flex-1 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 ${
+        gift ? "max-w-xl" : "max-w-6xl"
+      }`}
+    >
       <Breadcrumbs
         items={[
           { label: "Inicio", href: "/" },
           {
-            label: product.category,
+            label: gift ? "Gift Cards" : product.category,
             href: `/categoria/${categorySlug}`,
           },
-          { label: product.title },
+          { label: crumbLabel },
         ]}
       />
 
