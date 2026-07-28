@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Nueva Colección (AW)",
+    "slug": "nueva-coleccion-aw",
+    "count": 0
+  },
+  {
+    "name": "Lace Collection",
+    "slug": "lace-collection",
+    "count": 10
+  },
+  {
+    "name": "Basic Set (3x270)",
+    "slug": "basic-set-3x270",
+    "count": 22
+  },
+  {
+    "name": "Pack Manga Larga (3 x Bs. 294)",
+    "slug": "pack-manga-larga-3-x-bs-294",
+    "count": 3
+  },
+  {
+    "name": "Bodys",
+    "slug": "bodys",
+    "count": 13
+  },
+  {
+    "name": "Tops & Blusas",
+    "slug": "tops-blusas",
+    "count": 278
+  },
+  {
+    "name": "Corset",
+    "slug": "corset",
+    "count": 27
+  },
+  {
+    "name": "Pantalones",
+    "slug": "pantalones",
+    "count": 39
+  },
+  {
+    "name": "Faldas & Shorts",
+    "slug": "faldas-shorts",
+    "count": 83
+  },
+  {
+    "name": "Chaquetas",
+    "slug": "chaquetas",
+    "count": 56
+  },
+  {
+    "name": "Sweaters & Hoodies",
+    "slug": "sweaters-hoodies",
+    "count": 90
+  },
+  {
+    "name": "Chalecos",
+    "slug": "chalecos",
+    "count": 30
+  },
+  {
+    "name": "Conjuntos",
+    "slug": "conjuntos",
+    "count": 4
+  },
+  {
+    "name": "Vestidos & Enterizos",
+    "slug": "vestidos-enterizos",
+    "count": 37
+  },
+  {
+    "name": "Accesorios",
+    "slug": "accesorios",
+    "count": 5
+  },
+  {
+    "name": "Cinturones",
+    "slug": "cinturones",
+    "count": 25
+  },
+  {
+    "name": "Bolsos & Billeteras",
+    "slug": "bolsos-billeteras",
+    "count": 20
+  },
+  {
+    "name": "GIFT CARDS",
+    "slug": "gift-cards",
+    "count": 4
+  },
+  {
+    "name": "Relojes Mujer",
+    "slug": "relojes-mujer",
+    "count": 5
+  },
+  {
+    "name": "Varón",
+    "slug": "varon",
+    "count": 23
+  }
+]
