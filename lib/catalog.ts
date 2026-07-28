@@ -63,8 +63,10 @@ const productsByCategoryName = new Map<string, CatalogProduct[]>();
 
 type SearchDoc = {
   product: CatalogProduct;
-  haystack: string;
   titleNorm: string;
+  categoryNorm: string;
+  categoryTokens: string[];
+  descNorm: string;
 };
 
 const searchDocs: SearchDoc[] = [];
@@ -77,12 +79,13 @@ for (const product of catalog) {
   else productsByCategoryName.set(product.category, [product]);
 
   if (product.type !== "hidden") {
+    const categoryNorm = normalizeQuery(product.category);
     searchDocs.push({
       product,
-      haystack: normalizeQuery(
-        `${product.title} ${product.category} ${product.description ?? ""}`,
-      ),
       titleNorm: normalizeQuery(product.title),
+      categoryNorm,
+      categoryTokens: categoryNorm.split(/[^a-z0-9]+/).filter(Boolean),
+      descNorm: normalizeQuery(product.description ?? ""),
     });
   }
 }
@@ -332,7 +335,7 @@ export function searchCatalog(query: string, limit = 24): SearchResult {
   if (hit) return hit;
 
   const categories = getMenuCategories()
-    .filter((c) => normalizeQuery(c.name).includes(q))
+    .filter((c) => categoryNameMatches(c.name, q))
     .map((c) => {
       const meta = (
         categoriesData as { name: string; slug: string; count: number }[]
@@ -347,11 +350,17 @@ export function searchCatalog(query: string, limit = 24): SearchResult {
     .slice(0, 8);
 
   const products = searchDocs
-    .filter((doc) => doc.haystack.includes(q))
+    .filter((doc) => productDocMatches(doc, q))
     .sort((a, b) => {
-      const aTitle = a.titleNorm.startsWith(q) ? 1 : 0;
-      const bTitle = b.titleNorm.startsWith(q) ? 1 : 0;
-      if (bTitle !== aTitle) return bTitle - aTitle;
+      const score = (doc: SearchDoc) => {
+        if (doc.titleNorm === q) return 4;
+        if (doc.titleNorm.startsWith(q)) return 3;
+        if (doc.titleNorm.includes(q)) return 2;
+        if (doc.categoryTokens.some((t) => t.startsWith(q))) return 1;
+        return 0;
+      };
+      const diff = score(b) - score(a);
+      if (diff !== 0) return diff;
       return (
         Number(b.product.featured) - Number(a.product.featured) ||
         Number(b.product.type === "available") -
@@ -385,6 +394,34 @@ export function searchCatalog(query: string, limit = 24): SearchResult {
   searchResultCache.set(cacheKey, result);
 
   return result;
+}
+
+/** Match category by word prefix — avoids "Tops & Blusas" on every short substring. */
+function categoryNameMatches(name: string, q: string): boolean {
+  if (q.length < 2) return false;
+  const n = normalizeQuery(name);
+  if (n.startsWith(q)) return true;
+  const tokens = n.split(/[^a-z0-9]+/).filter(Boolean);
+  return tokens.some(
+    (token) =>
+      token.startsWith(q) || (q.length >= 4 && token.includes(q)),
+  );
+}
+
+function productDocMatches(doc: SearchDoc, q: string): boolean {
+  if (q.length < 2) return false;
+  if (doc.titleNorm.includes(q)) return true;
+  if (
+    doc.categoryTokens.some(
+      (token) =>
+        token.startsWith(q) || (q.length >= 4 && token.includes(q)),
+    )
+  ) {
+    return true;
+  }
+  // Descriptions only for longer queries (avoid noisy matches)
+  if (q.length >= 4 && doc.descNorm.includes(q)) return true;
+  return false;
 }
 
 export { formatPriceBob } from "@/lib/format";

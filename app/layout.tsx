@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { CartRoot } from "@/components/cart/CartRoot";
 import { CatalogWarmup } from "@/components/CatalogWarmup";
@@ -26,6 +26,13 @@ export const metadata: Metadata = {
     icon: [{ url: "/simplicity-logo.jpg", type: "image/jpeg" }],
     apple: [{ url: "/simplicity-logo.jpg", type: "image/jpeg" }],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f7f7f5",
 };
 
 export default function RootLayout({

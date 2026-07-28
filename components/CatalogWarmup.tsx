@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const STORAGE_KEY = "simplicity-search-v1";
+const STORAGE_KEY = "simplicity-search-v2";
 
 /**
  * Syncs catalog version cookie/localStorage on each visit.

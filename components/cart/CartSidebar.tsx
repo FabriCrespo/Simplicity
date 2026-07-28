@@ -75,7 +75,7 @@ export function CartSidebar() {
         role="dialog"
         aria-modal="true"
         aria-label="Bolsa"
-        className={`absolute right-0 top-0 flex h-full w-[min(100%,22rem)] flex-col bg-background transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:w-[24rem] ${
+        className={`absolute right-0 top-0 flex h-full w-[min(100%,22rem)] flex-col bg-background pt-[env(safe-area-inset-top)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:w-[24rem] ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

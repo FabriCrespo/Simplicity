@@ -52,7 +52,7 @@ function CategorySidebar({
         role="dialog"
         aria-modal="true"
         aria-label="Categorías"
-        className={`absolute left-0 top-0 flex h-full w-[min(100%,20rem)] flex-col bg-background transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:w-88 ${
+        className={`absolute left-0 top-0 flex h-full w-[min(100%,20rem)] flex-col bg-background pt-[env(safe-area-inset-top)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:w-88 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -97,7 +97,7 @@ export function SiteHeader({ categories }: { categories: MenuCategory[] }) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-background">
+      <header className="sticky top-0 z-50 bg-background pt-[env(safe-area-inset-top)]">
         <div className="relative flex h-14 items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 sm:gap-6">
             <button

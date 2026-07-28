@@ -5,7 +5,7 @@
 
 import type { SearchResult } from "@/lib/catalog";
 
-const STORAGE_KEY = "simplicity-search-v1";
+const STORAGE_KEY = "simplicity-search-v2";
 const MAX_ENTRIES = 40;
 
 type Store = {

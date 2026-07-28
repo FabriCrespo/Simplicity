@@ -84,11 +84,13 @@ export function SearchOverlay({ open, onClose }: Props) {
     }
 
     setLoading(true);
+    setResult(emptyResult);
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
           signal: controller.signal,
+          cache: "no-store",
         });
         if (!res.ok) throw new Error("search failed");
         const data = (await res.json()) as SearchResult;
@@ -100,7 +102,11 @@ export function SearchOverlay({ open, onClose }: Props) {
         setResult(data);
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
-          setResult(emptyResult);
+          setResult({
+            query: q,
+            categories: [],
+            products: [],
+          });
         }
       } finally {
         setLoading(false);
@@ -114,8 +120,12 @@ export function SearchOverlay({ open, onClose }: Props) {
   }, [query, open]);
 
   const hasQuery = query.trim().length > 0;
+  const resultMatchesQuery =
+    result.query.trim().toLowerCase() === query.trim().toLowerCase();
   const hasHits =
-    result.categories.length > 0 || result.products.length > 0;
+    resultMatchesQuery &&
+    (result.categories.length > 0 || result.products.length > 0);
+  const showLoading = hasQuery && !resultMatchesQuery;
 
   return (
     <div
@@ -135,7 +145,7 @@ export function SearchOverlay({ open, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label="Buscar"
-        className={`absolute inset-x-0 top-0 max-h-[min(100%,36rem)] overflow-hidden border-b border-border bg-background transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`absolute inset-x-0 top-0 max-h-[min(100%,36rem)] overflow-hidden border-b border-border bg-background pt-[env(safe-area-inset-top)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? "translate-y-0" : "-translate-y-full"
         }`}
       >
@@ -171,7 +181,7 @@ export function SearchOverlay({ open, onClose }: Props) {
             <p className="py-10 text-center text-[11px] font-light uppercase tracking-[0.2em] text-muted">
               Escribe para buscar
             </p>
-          ) : loading ? (
+          ) : showLoading ? (
             <p className="py-10 text-center text-[11px] font-light uppercase tracking-[0.2em] text-muted">
               Buscando…
             </p>

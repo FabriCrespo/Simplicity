@@ -8,8 +8,9 @@ export async function GET(request: Request) {
 
   const response = NextResponse.json(result, {
     headers: {
-      "Cache-Control":
-        "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+      // Avoid Safari reusing the wrong cached search response across queries
+      "Cache-Control": "private, no-store",
+      Vary: "Accept",
       "X-Catalog-Version": CATALOG_VERSION,
     },
   });
