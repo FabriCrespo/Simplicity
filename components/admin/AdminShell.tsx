@@ -229,16 +229,23 @@ function AdminLogin() {
 
           <label className="block">
             <span className="text-[12px] font-medium text-[color:var(--admin-ink)]">
-              PIN
+              Código de acceso
             </span>
             <input
-              type="password"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="admin-input mt-2"
-              autoComplete="current-password"
+              type="text"
               inputMode="numeric"
-              placeholder="••••••••"
+              pattern="[0-9]*"
+              enterKeyHint="done"
+              autoComplete="one-time-code"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              value={value}
+              onChange={(e) =>
+                setValue(e.target.value.replace(/\D/g, ""))
+              }
+              className="admin-input mt-2 tracking-[0.2em]"
+              placeholder="Solo números"
             />
           </label>
 
