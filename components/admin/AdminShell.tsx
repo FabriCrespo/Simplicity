@@ -270,7 +270,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="admin-root flex min-h-full flex-1 flex-col lg:flex-row">
-      <RoutePrefetch hrefs={[...ADMIN_PREFETCH_ROUTES]} delayMs={200} />
+      <RoutePrefetch hrefs={ADMIN_PREFETCH_ROUTES} delayMs={200} />
 
       {/* Desktop sidebar */}
       <aside className="admin-sidebar relative hidden lg:flex lg:w-[15.5rem] lg:shrink-0 lg:flex-col">

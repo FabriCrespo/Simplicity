@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 type Props = {
   /** Rutas a precargar en idle (payload RSC del router). */
-  hrefs: string[];
+  hrefs: readonly string[];
   /** Delay antes de prefetch si no hay requestIdleCallback. */
   delayMs?: number;
 };
@@ -31,11 +31,21 @@ export function RoutePrefetch({ hrefs, delayMs = 400 }: Props) {
       }
     };
 
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(run, { timeout: 2500 });
+    const idle = (
+      window as Window & {
+        requestIdleCallback?: (
+          cb: () => void,
+          opts?: { timeout: number },
+        ) => number;
+        cancelIdleCallback?: (id: number) => void;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idle === "function") {
+      const id = idle(run, { timeout: 2500 });
       return () => {
         cancelled = true;
-        window.cancelIdleCallback(id);
+        window.cancelIdleCallback?.(id);
       };
     }
 
