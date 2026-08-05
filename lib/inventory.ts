@@ -2,13 +2,10 @@ import type { CatalogProduct } from "@/lib/catalog";
 import type { OrderItem } from "@/lib/orders";
 import {
   readProducts,
+  writeProducts,
   type ProductOptionChoice,
   type ProductOptionGroup,
 } from "@/lib/products-store";
-import { writeFile } from "fs/promises";
-import path from "path";
-
-const PRODUCTS_PATH = path.join(process.cwd(), "data", "products.json");
 
 export type CartLineInput = {
   productId: string;
@@ -207,14 +204,6 @@ export async function resolveCartLines(
   }
 
   return items;
-}
-
-async function writeProducts(products: CatalogProduct[]) {
-  await writeFile(
-    PRODUCTS_PATH,
-    `${JSON.stringify(products, null, 2)}\n`,
-    "utf8",
-  );
 }
 
 function applyStockDelta(

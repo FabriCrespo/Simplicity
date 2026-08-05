@@ -1,5 +1,3 @@
-import { mkdir, readFile, writeFile } from "fs/promises";
-import path from "path";
 import { makeAccessToken } from "@/lib/order-access";
 import {
   releaseStock,
@@ -7,6 +5,19 @@ import {
   resolveCartLines,
   type CartLineInput,
 } from "@/lib/inventory";
+import {
+  readBinaryKey,
+  readJsonKey,
+  readLegacyPublicReceipt,
+  writeBinaryKey,
+  writeJsonKey,
+} from "@/lib/kv-store";
+import {
+  getSupabaseAdmin,
+  isSupabaseConfigured,
+  RECEIPTS_BUCKET,
+} from "@/lib/supabase";
+import { orderToRow, rowToOrder } from "@/lib/supabase-mappers";
 import { withStoreLock } from "@/lib/store-lock";
 
 export type OrderItem = {
@@ -27,7 +38,6 @@ export type OrderStatus =
   | "paid"
   | "cancelled";
 
-/** Logística / envío (independiente del pago). */
 export type FulfillmentStatus =
   | "unfulfilled"
   | "preparing"
@@ -52,7 +62,6 @@ export type OrderCustomer = {
 
 export type Order = {
   id: string;
-  /** Token secreto para ver/pagar el pedido sin ser admin. */
   accessToken: string;
   createdAt: string;
   updatedAt: string;
@@ -62,27 +71,14 @@ export type Order = {
   items: OrderItem[];
   subtotal: number;
   currency: "BOB";
-  /** Nombre de archivo en data/receipts (no URL pública). */
   receiptFile?: string;
-  /** @deprecated Rutas públicas antiguas; preferir receiptFile. */
   receiptPath?: string;
   receiptUploadedAt?: string;
   adminNote?: string;
-  /** Stock ya descontado al crear el pedido. */
   stockReserved?: boolean;
 };
 
-const ORDERS_PATH = path.join(process.cwd(), "data", "orders.json");
-const RECEIPTS_DIR = path.join(process.cwd(), "data", "receipts");
-
-async function ensureOrdersFile() {
-  try {
-    await readFile(ORDERS_PATH, "utf8");
-  } catch {
-    await mkdir(path.dirname(ORDERS_PATH), { recursive: true });
-    await writeFile(ORDERS_PATH, "[]\n", "utf8");
-  }
-}
+const ORDERS_KEY = "orders";
 
 function normalizeOrder(order: Order): Order {
   return {
@@ -93,29 +89,26 @@ function normalizeOrder(order: Order): Order {
   };
 }
 
-export async function readOrders(): Promise<Order[]> {
-  await ensureOrdersFile();
-  const raw = await readFile(ORDERS_PATH, "utf8");
-  try {
-    const parsed = JSON.parse(raw) as Order[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map(normalizeOrder);
-  } catch {
-    return [];
-  }
+async function readOrdersLocal(): Promise<Order[]> {
+  const parsed = await readJsonKey<Order[]>(ORDERS_KEY, []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.map(normalizeOrder);
 }
 
-async function ensureAllAccessTokens() {
-  await withStoreLock(async () => {
-    const orders = await readOrders();
-    let dirty = false;
-    const next = orders.map((order) => {
-      if (order.accessToken) return order;
-      dirty = true;
-      return { ...order, accessToken: makeAccessToken() };
-    });
-    if (dirty) await writeOrders(next);
-  });
+export async function readOrders(): Promise<Order[]> {
+  if (!isSupabaseConfigured()) {
+    return readOrdersLocal();
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`Supabase orders: ${error.message}`);
+  return (data ?? []).map((row) =>
+    normalizeOrder(rowToOrder(row as Record<string, unknown>)),
+  );
 }
 
 export type OrderListStatusFilter =
@@ -130,9 +123,7 @@ export type OrderListQuery = {
   page?: number;
   pageSize?: number;
   status?: OrderListStatusFilter;
-  /** YYYY-MM-DD inclusive */
   from?: string;
-  /** YYYY-MM-DD inclusive */
   to?: string;
 };
 
@@ -156,7 +147,6 @@ function matchesStatus(order: Order, status: OrderListStatusFilter) {
   return order.status === status;
 }
 
-/** Lista filtrada + paginada (más nuevo primero). */
 export async function listOrders(
   query: OrderListQuery = {},
 ): Promise<OrderListResult> {
@@ -200,9 +190,40 @@ export async function listOrders(
   };
 }
 
-async function writeOrders(orders: Order[]) {
-  await ensureOrdersFile();
-  await writeFile(ORDERS_PATH, `${JSON.stringify(orders, null, 2)}\n`, "utf8");
+async function persistOrder(order: Order) {
+  if (!isSupabaseConfigured()) {
+    const orders = await readOrdersLocal();
+    const index = orders.findIndex((o) => o.id === order.id);
+    if (index >= 0) orders[index] = order;
+    else orders.unshift(order);
+    await writeJsonKey(ORDERS_KEY, orders);
+    return order;
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("orders")
+    .upsert(orderToRow(order))
+    .select("*")
+    .single();
+  if (error) throw new Error(`Supabase save order: ${error.message}`);
+  return normalizeOrder(rowToOrder(data as Record<string, unknown>));
+}
+
+async function ensureAllAccessTokens() {
+  await withStoreLock(async () => {
+    const orders = await readOrders();
+    const missing = orders.filter((o) => !o.accessToken);
+    if (!missing.length) return;
+
+    for (const order of missing) {
+      await persistOrder({
+        ...order,
+        accessToken: makeAccessToken(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  });
 }
 
 function makeOrderId() {
@@ -211,20 +232,32 @@ function makeOrderId() {
   return `SMP-${stamp}-${rand}`;
 }
 
-/** Asegura token en pedidos viejos y persiste si faltaba. */
+async function fetchOrderById(id: string): Promise<Order | null> {
+  if (!isSupabaseConfigured()) {
+    return (await readOrdersLocal()).find((o) => o.id === id) ?? null;
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(`Supabase get order: ${error.message}`);
+  if (!data) return null;
+  return normalizeOrder(rowToOrder(data as Record<string, unknown>));
+}
+
 export async function ensureOrderAccessToken(id: string): Promise<Order | null> {
   return withStoreLock(async () => {
-    const orders = await readOrders();
-    const index = orders.findIndex((o) => o.id === id);
-    if (index < 0) return null;
-    if (orders[index].accessToken) return orders[index];
-    orders[index] = {
-      ...orders[index],
+    const order = await fetchOrderById(id);
+    if (!order) return null;
+    if (order.accessToken) return order;
+    return persistOrder({
+      ...order,
       accessToken: makeAccessToken(),
       updatedAt: new Date().toISOString(),
-    };
-    await writeOrders(orders);
-    return orders[index];
+    });
   });
 }
 
@@ -256,20 +289,14 @@ export async function createOrder(input: {
       stockReserved: true,
     };
 
-    const orders = await readOrders();
-    orders.unshift(order);
-    await writeOrders(orders);
-    return order;
+    return persistOrder(order);
   });
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {
-  const orders = await readOrders();
-  const found = orders.find((o) => o.id === id) ?? null;
+  const found = await fetchOrderById(id);
   if (!found) return null;
-  if (!found.accessToken) {
-    return ensureOrderAccessToken(id);
-  }
+  if (!found.accessToken) return ensureOrderAccessToken(id);
   return found;
 }
 
@@ -291,13 +318,11 @@ export async function updateOrder(
   patch: OrderPatch,
 ): Promise<Order | null> {
   return withStoreLock(async () => {
-    const orders = await readOrders();
-    const index = orders.findIndex((o) => o.id === id);
-    if (index < 0) return null;
+    const current = await fetchOrderById(id);
+    if (!current) return null;
 
-    const current = normalizeOrder(orders[index]);
     const next: Order = {
-      ...current,
+      ...normalizeOrder(current),
       ...patch,
       updatedAt: new Date().toISOString(),
     };
@@ -309,14 +334,37 @@ export async function updateOrder(
       next.stockReserved = false;
     }
 
-    orders[index] = next;
-    await writeOrders(orders);
-    return orders[index];
+    return persistOrder(next);
   });
 }
 
-export function receiptDiskPath(filename: string) {
-  return path.join(RECEIPTS_DIR, filename);
+export async function readOrderReceiptBytes(
+  order: Order,
+): Promise<{ bytes: Buffer; filename: string } | null> {
+  const key = order.receiptFile;
+  if (key) {
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await supabase.storage
+        .from(RECEIPTS_BUCKET)
+        .download(key);
+      if (!error && data) {
+        const ab = await data.arrayBuffer();
+        return { bytes: Buffer.from(ab), filename: key.split("/").pop() || key };
+      }
+    }
+
+    const local = await readBinaryKey(key);
+    if (local) return { bytes: local, filename: key };
+  }
+
+  if (order.receiptPath?.startsWith("/uploads/receipts/")) {
+    const filename = order.receiptPath.split("/").pop() || "receipt";
+    const bytes = await readLegacyPublicReceipt(order.receiptPath);
+    if (bytes) return { bytes, filename };
+  }
+
+  return null;
 }
 
 export async function saveOrderReceipt(
@@ -328,11 +376,10 @@ export async function saveOrderReceipt(
   },
 ): Promise<Order | null> {
   return withStoreLock(async () => {
-    const orders = await readOrders();
-    const index = orders.findIndex((o) => o.id === id);
-    if (index < 0) return null;
+    const current = await fetchOrderById(id);
+    if (!current) return null;
 
-    if (orders[index].status === "cancelled") {
+    if (current.status === "cancelled") {
       throw new Error("Este pedido está cancelado");
     }
 
@@ -352,8 +399,6 @@ export async function saveOrderReceipt(
       throw new Error("El archivo supera 8 MB.");
     }
 
-    await mkdir(RECEIPTS_DIR, { recursive: true });
-
     const ext =
       file.mimeType === "application/pdf"
         ? "pdf"
@@ -366,20 +411,32 @@ export async function saveOrderReceipt(
               : "jpg";
 
     const safeName = `${id.replace(/[^a-zA-Z0-9_-]/g, "")}-${Date.now()}.${ext}`;
-    await writeFile(path.join(RECEIPTS_DIR, safeName), file.bytes);
+
+    if (isSupabaseConfigured()) {
+      const supabase = getSupabaseAdmin();
+      const ab = file.bytes.buffer.slice(
+        file.bytes.byteOffset,
+        file.bytes.byteOffset + file.bytes.byteLength,
+      ) as ArrayBuffer;
+      const { error } = await supabase.storage
+        .from(RECEIPTS_BUCKET)
+        .upload(safeName, ab, {
+          contentType: file.mimeType,
+          upsert: false,
+        });
+      if (error) throw new Error(`Storage receipt: ${error.message}`);
+    } else {
+      await writeBinaryKey(safeName, file.bytes, file.mimeType);
+    }
 
     const now = new Date().toISOString();
-
-    orders[index] = {
-      ...orders[index],
+    return persistOrder({
+      ...current,
       receiptFile: safeName,
       receiptPath: undefined,
       receiptUploadedAt: now,
-      status: orders[index].status === "paid" ? "paid" : "pending_review",
+      status: current.status === "paid" ? "paid" : "pending_review",
       updatedAt: now,
-    };
-
-    await writeOrders(orders);
-    return orders[index];
+    });
   });
 }

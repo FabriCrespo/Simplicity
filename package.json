@@ -7,9 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "extract:pency": "node scripts/extract-pency.mjs"
+    "extract:pency": "node scripts/extract-pency.mjs",
+    "seed:supabase": "node scripts/seed-supabase.mjs"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.12",
+    "@netlify/plugin-nextjs": "^5.15.13",
+    "@supabase/supabase-js": "^2.112.1",
     "lucide-react": "^1.27.0",
     "next": "16.2.12",
     "postcss": "^8.5.24",

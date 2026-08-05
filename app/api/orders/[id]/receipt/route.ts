@@ -1,9 +1,7 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import {
   getOrderById,
-  receiptDiskPath,
+  readOrderReceiptBytes,
   saveOrderReceipt,
 } from "@/lib/orders";
 import { canAccessOrder } from "@/lib/order-access";
@@ -29,28 +27,15 @@ export async function GET(request: Request, { params }: Params) {
   }
 
   try {
-    let bytes: Buffer;
-    let filename: string;
-
-    if (order.receiptFile) {
-      filename = order.receiptFile;
-      bytes = await readFile(receiptDiskPath(filename));
-    } else if (order.receiptPath?.startsWith("/uploads/receipts/")) {
-      filename = path.basename(order.receiptPath);
-      bytes = await readFile(
-        path.join(process.cwd(), "public", order.receiptPath),
-      );
-    } else {
-      return NextResponse.json(
-        { error: "Sin comprobante" },
-        { status: 404 },
-      );
+    const receipt = await readOrderReceiptBytes(order);
+    if (!receipt) {
+      return NextResponse.json({ error: "Sin comprobante" }, { status: 404 });
     }
 
-    return new NextResponse(new Uint8Array(bytes), {
+    return new NextResponse(new Uint8Array(receipt.bytes), {
       headers: {
-        "Content-Type": contentTypeFor(filename),
-        "Content-Disposition": `inline; filename="${filename}"`,
+        "Content-Type": contentTypeFor(receipt.filename),
+        "Content-Disposition": `inline; filename="${receipt.filename}"`,
         "Cache-Control": "private, no-store",
       },
     });
