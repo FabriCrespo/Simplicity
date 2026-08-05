@@ -9,7 +9,6 @@ import {
   SiTiktok,
 } from "react-icons/si";
 import type { IconType } from "react-icons";
-import { Reveal } from "@/components/Reveal";
 
 const LOCATION = {
   title: "Simplicity",
@@ -62,7 +61,7 @@ export function VisitSection() {
       className="border-t border-border bg-background text-foreground"
     >
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        <Reveal className="text-center">
+        <div className="text-center">
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted">
             XOXO
           </p>
@@ -75,10 +74,10 @@ export function VisitSection() {
           <p className="mx-auto mt-3 max-w-md font-display text-base italic text-muted sm:text-lg">
             Welcome to the club, sister.
           </p>
-        </Reveal>
+        </div>
 
         <div className="mt-12 grid gap-10 sm:mt-14 md:grid-cols-3 md:gap-10 lg:mt-16 lg:gap-16">
-          <Reveal delayMs={80} className="text-center md:text-left">
+          <div className="text-center md:text-left">
             <div className="mb-4 flex items-center justify-center gap-2 md:justify-start">
               <MapPin className="size-4 text-muted" strokeWidth={1} />
               <h3 className="text-[11px] uppercase tracking-[0.22em] text-muted">
@@ -99,9 +98,9 @@ export function VisitSection() {
             >
               Cómo llegar
             </Link>
-          </Reveal>
+          </div>
 
-          <Reveal delayMs={140} className="text-center md:text-left">
+          <div className="text-center md:text-left">
             <h3 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted">
               Horarios
             </h3>
@@ -126,9 +125,9 @@ export function VisitSection() {
             >
               WhatsApp
             </Link>
-          </Reveal>
+          </div>
 
-          <Reveal delayMs={200} className="text-center md:text-left">
+          <div className="text-center md:text-left">
             <h3 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted">
               Redes
             </h3>
@@ -139,7 +138,7 @@ export function VisitSection() {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 text-sm tracking-wide text-foreground transition-transform active:scale-95 hover:opacity-50"
+                    className="inline-flex items-center gap-3 text-sm tracking-wide text-foreground hover:opacity-50"
                   >
                     <Icon className="size-4 opacity-90" aria-hidden />
                     <span className="text-[11px] uppercase tracking-[0.18em]">
@@ -149,19 +148,19 @@ export function VisitSection() {
                 </li>
               ))}
             </ul>
-          </Reveal>
+          </div>
         </div>
 
-        <Reveal delayMs={120} className="group relative mt-12 overflow-hidden border border-border sm:mt-16">
+        <div className="group relative mt-12 overflow-hidden border border-border sm:mt-16">
           <iframe
             title="Ubicación de Simplicity en Google Maps"
             src={LOCATION.mapsEmbed}
-            className="h-60 w-full grayscale contrast-[1.05] transition-[filter] duration-700 group-active:grayscale-0 sm:h-90 md:h-105 md:group-hover:grayscale-0"
+            className="h-60 w-full grayscale contrast-[1.05] transition-[filter] duration-300 group-active:grayscale-0 sm:h-90 md:h-105 md:group-hover:grayscale-0"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             allowFullScreen
           />
-        </Reveal>
+        </div>
       </div>
     </section>
   );

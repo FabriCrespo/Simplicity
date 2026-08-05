@@ -1,0 +1,176 @@
+[
+  {
+    "id": "SMP-MSFH7SYV-SGMV",
+    "createdAt": "2026-08-05T02:37:05.767Z",
+    "updatedAt": "2026-08-05T02:37:16.409Z",
+    "status": "pending_review",
+    "fulfillmentStatus": "unfulfilled",
+    "customer": {
+      "name": "FABRICIO RENE Crespo Rossel",
+      "phone": "+59161615979",
+      "city": "Cochabamba",
+      "fulfillment": "delivery",
+      "address": "Av.America Casa #110",
+      "location": {
+        "lat": -17.388094839161077,
+        "lng": -66.15211486816408,
+        "mapsUrl": "https://www.google.com/maps?q=-17.388094839161077,-66.15211486816408"
+      }
+    },
+    "items": [
+      {
+        "key": "6a6013885d67d400046c88d6::5S3g9JD4y",
+        "productId": "6a6013885d67d400046c88d6",
+        "slug": "cross-neck-jacket-textura_6a6013885d67d400046c88d6",
+        "title": "Cross Neck Jacket (Textura)",
+        "price": 395,
+        "image": "https://pency-images.nyc3.digitaloceanspaces.com/simplicitybolivia/1784681285555.jpg",
+        "quantity": 1,
+        "optionLabel": "Negro · L/XL"
+      }
+    ],
+    "subtotal": 395,
+    "currency": "BOB",
+    "receiptPath": "/uploads/receipts/SMP-MSFH7SYV-SGMV-1785897436407.pdf",
+    "receiptUploadedAt": "2026-08-05T02:37:16.409Z",
+    "accessToken": "yWGjDHf-S_SKgX5gJrRtgEA7CgdzNSAJ",
+    "stockReserved": false
+  },
+  {
+    "id": "SMP-MSFGSYUA-GK6B",
+    "createdAt": "2026-08-05T02:25:33.538Z",
+    "updatedAt": "2026-08-05T02:37:42.599Z",
+    "status": "paid",
+    "fulfillmentStatus": "delivered",
+    "customer": {
+      "name": "FABRICIO RENE Crespo Rossel",
+      "phone": "+59161615979",
+      "city": "Cochabamba",
+      "fulfillment": "pickup"
+    },
+    "items": [
+      {
+        "key": "6a3578bdc7570a0004c00c9c::9eHwmWzW70",
+        "productId": "6a3578bdc7570a0004c00c9c",
+        "slug": "blusa-satinada_6a3578bdc7570a0004c00c9c",
+        "title": "Blusa Satinada ",
+        "price": 160,
+        "image": "https://pency-images.nyc3.digitaloceanspaces.com/simplicitybolivia/1781888838828.jpg",
+        "quantity": 1,
+        "optionLabel": "M"
+      }
+    ],
+    "subtotal": 160,
+    "currency": "BOB",
+    "receiptPath": "/uploads/receipts/SMP-MSFGSYUA-GK6B-1785897157306.pdf",
+    "receiptUploadedAt": "2026-08-05T02:32:37.308Z",
+    "accessToken": "kRyYePTi7UQsWoHD7rXV0hlsoa3_Q0Od",
+    "stockReserved": false
+  },
+  {
+    "id": "SMP-MSF5F2VU-LG3H",
+    "createdAt": "2026-08-04T21:06:49.818Z",
+    "updatedAt": "2026-08-05T02:22:39.312Z",
+    "status": "cancelled",
+    "customer": {
+      "name": "FABRICIO RENE Crespo Rossel",
+      "phone": "+59161615979",
+      "city": "Cochabamba",
+      "fulfillment": "pickup"
+    },
+    "items": [
+      {
+        "key": "69a21edd046d8500046596f9::qqL4PVnDuw",
+        "productId": "69a21edd046d8500046596f9",
+        "slug": "lace-tshirt-satin_69a21edd046d8500046596f9",
+        "title": "Lace Tshirt Satin",
+        "price": 210,
+        "image": "https://pency-images.nyc3.digitaloceanspaces.com/simplicitybolivia/1772232272463.jpg",
+        "quantity": 2,
+        "optionLabel": "Marfil"
+      },
+      {
+        "key": "69fbcb259006bd00042ef13b::KIkOLTM8yD",
+        "productId": "69fbcb259006bd00042ef13b",
+        "slug": "top-recto-encaje_69fbcb259006bd00042ef13b",
+        "title": "Top Recto Encaje",
+        "price": 170,
+        "image": "https://pency-images.nyc3.digitaloceanspaces.com/simplicitybolivia/1778109070036.jpg",
+        "quantity": 1,
+        "optionLabel": "Negro"
+      }
+    ],
+    "subtotal": 590,
+    "currency": "BOB",
+    "receiptPath": "/uploads/receipts/SMP-MSF5F2VU-LG3H-1785877640355.jpg",
+    "receiptUploadedAt": "2026-08-04T21:07:20.356Z",
+    "fulfillmentStatus": "unfulfilled",
+    "accessToken": "EZJyIFNy06c8G7ii3iFOGLFF5qO2dOUL",
+    "stockReserved": false
+  },
+  {
+    "id": "SMP-MSF58VPT-JRXH",
+    "createdAt": "2026-08-04T21:02:00.593Z",
+    "updatedAt": "2026-08-05T02:22:40.762Z",
+    "status": "cancelled",
+    "customer": {
+      "name": "FABRICIO RENE Crespo Rossel",
+      "phone": "+59161615979",
+      "city": "Cochabamba",
+      "fulfillment": "delivery",
+      "address": "Av.America",
+      "location": {
+        "lat": -17.385565898729993,
+        "lng": -66.15065574645998,
+        "mapsUrl": "https://www.google.com/maps?q=-17.385565898729993,-66.15065574645998"
+      }
+    },
+    "items": [
+      {
+        "key": "6a6013885d67d400046c88d6::FSxMcTvz9",
+        "productId": "6a6013885d67d400046c88d6",
+        "slug": "cross-neck-jacket-textura_6a6013885d67d400046c88d6",
+        "title": "Cross Neck Jacket (Textura)",
+        "price": 395,
+        "image": "https://pency-images.nyc3.digitaloceanspaces.com/simplicitybolivia/1784681285555.jpg",
+        "quantity": 1,
+        "optionLabel": "L/XL"
+      }
+    ],
+    "subtotal": 395,
+    "currency": "BOB",
+    "fulfillmentStatus": "unfulfilled",
+    "accessToken": "LiWNCLGi693Kz1c2mhVfV7lnG23BeeWz",
+    "stockReserved": false
+  },
+  {
+    "id": "SMP-MSF4XIND-BT8R",
+    "createdAt": "2026-08-04T20:53:10.441Z",
+    "updatedAt": "2026-08-05T02:22:41.337Z",
+    "status": "cancelled",
+    "customer": {
+      "name": "Fabricio Crespo",
+      "phone": "+59161615979",
+      "city": "Cochabamba",
+      "fulfillment": "pickup",
+      "note": "Talla M"
+    },
+    "items": [
+      {
+        "key": "6a6013885d67d400046c88d6::FSxMcTvz9",
+        "productId": "6a6013885d67d400046c88d6",
+        "slug": "cross-neck-jacket-textura_6a6013885d67d400046c88d6",
+        "title": "Cross Neck Jacket (Textura)",
+        "price": 395,
+        "image": "https://pency-images.nyc3.digitaloceanspaces.com/simplicitybolivia/1784681285555.jpg",
+        "quantity": 1,
+        "optionLabel": "L/XL"
+      }
+    ],
+    "subtotal": 395,
+    "currency": "BOB",
+    "fulfillmentStatus": "unfulfilled",
+    "accessToken": "WaxUNlcy_R-tg3Cr6jj_I7U808OsQp-c",
+    "stockReserved": false
+  }
+]

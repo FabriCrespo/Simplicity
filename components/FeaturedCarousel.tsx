@@ -148,28 +148,22 @@ export function FeaturedCarousel({ products }: Props) {
               href={`/producto/${product.slug}`}
               data-carousel-index={index}
               aria-current={isActive ? "true" : undefined}
-              className={`group w-[58vw] shrink-0 snap-center transition-all duration-500 ease-out sm:w-[28vw] md:w-[22vw] lg:w-[18vw] ${
+              className={`group w-[58vw] shrink-0 snap-center transition-opacity duration-300 ease-out sm:w-[28vw] md:w-[22vw] lg:w-[18vw] ${
                 isActive
-                  ? "z-10 scale-[1.04] opacity-100"
-                  : "scale-95 opacity-40"
+                  ? "z-10 opacity-100"
+                  : "opacity-45"
               }`}
             >
-              <div
-                className={`relative aspect-3/4 overflow-hidden bg-border transition-shadow duration-500 ${
-                  isActive
-                    ? "shadow-[0_18px_40px_-24px_rgba(0,0,0,0.55)]"
-                    : ""
-                }`}
-              >
+              <div className="relative aspect-3/4 overflow-hidden bg-border">
                 {image ? (
                   <Image
                     src={image}
                     alt={product.title}
                     fill
                     sizes="(max-width: 640px) 42vw, (max-width: 1024px) 28vw, 18vw"
-                    className={`object-cover transition-[filter,transform] duration-500 ease-out ${
+                    className={`object-cover transition-[filter] duration-300 ease-out ${
                       isActive ? "grayscale-0" : "grayscale"
-                    } group-hover:scale-[1.03]`}
+                    }`}
                     onError={() => {
                       markImageBroken(image);
                       setBrokenIds((prev) => new Set(prev).add(product.id));
@@ -184,7 +178,7 @@ export function FeaturedCarousel({ products }: Props) {
               </div>
 
               <div
-                className={`mt-3 space-y-1 transition-opacity duration-500 ${
+                className={`mt-3 space-y-1 ${
                   isActive ? "opacity-100" : "opacity-50"
                 }`}
               >

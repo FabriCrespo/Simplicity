@@ -136,7 +136,7 @@ export function Hero() {
                 priority={index === 0}
                 sizes="33vw"
                 aria-hidden
-                className="object-cover object-center transition-transform duration-700 hover:scale-[1.03]"
+                className="object-cover object-center"
               />
             </button>
           ))}
@@ -163,14 +163,14 @@ export function Hero() {
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-4">
-        <p className="animate-fade-up text-[9px] font-light uppercase tracking-[0.42em] text-white/75 sm:text-[10px]">
+        <p className="text-[9px] font-light uppercase tracking-[0.42em] text-white/75 sm:text-[10px]">
           XOXO
         </p>
-        <h1 className="animate-fade-up animate-delay-1 mt-3 text-center font-display text-[2rem] font-medium tracking-[0.06em] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)] sm:text-5xl md:text-6xl lg:text-[4.5rem]">
+        <h1 className="animate-fade-up mt-3 text-center font-display text-[2rem] font-medium tracking-[0.06em] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)] sm:text-5xl md:text-6xl lg:text-[4.5rem]">
           Welcome to the club
         </h1>
-        <span className="animate-shimmer-line animate-delay-2 mt-4 h-px w-16 bg-white/70 sm:w-24" />
-        <p className="animate-fade-up animate-delay-3 mt-5 hidden text-[10px] font-light uppercase tracking-[0.28em] text-white/55 md:block">
+        <span className="mt-4 h-px w-16 bg-white/70 sm:w-24" />
+        <p className="mt-5 hidden text-[10px] font-light uppercase tracking-[0.28em] text-white/55 md:block">
           Move to reveal color
         </p>
       </div>

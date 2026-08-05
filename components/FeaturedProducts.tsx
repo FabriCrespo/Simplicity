@@ -1,6 +1,5 @@
 import { getFeaturedProducts } from "@/lib/catalog";
 import { FeaturedCarousel } from "@/components/FeaturedCarousel";
-import { Reveal } from "@/components/Reveal";
 
 export function FeaturedProducts() {
   const products = getFeaturedProducts();
@@ -11,7 +10,7 @@ export function FeaturedProducts() {
       aria-labelledby="destacados-heading"
       className="border-t border-border bg-background py-12 sm:py-16"
     >
-      <Reveal className="mb-8 px-4 text-center sm:mb-10 sm:px-6 lg:px-8">
+      <div className="mb-8 px-4 text-center sm:mb-10 sm:px-6 lg:px-8">
         <p className="text-[10px] uppercase tracking-[0.28em] text-muted">
           XOXO
         </p>
@@ -21,7 +20,7 @@ export function FeaturedProducts() {
         >
           Destacados
         </h2>
-      </Reveal>
+      </div>
 
       <FeaturedCarousel products={products} />
     </section>

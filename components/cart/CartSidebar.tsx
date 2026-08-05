@@ -10,24 +10,6 @@ import { formatPriceBob } from "@/lib/format";
 
 const WHATSAPP = "https://wa.me/59177957266";
 
-function buildWhatsAppMessage(
-  items: { title: string; quantity: number; price: number; optionLabel?: string }[],
-  subtotal: number
-) {
-  const lines = [
-    "Hola Simplicity 🩶",
-    "Quiero este pedido:",
-    "",
-    ...items.map((item) => {
-      const opt = item.optionLabel ? ` (${item.optionLabel})` : "";
-      return `• ${item.title}${opt} x${item.quantity} — ${formatPriceBob(item.price * item.quantity)}`;
-    }),
-    "",
-    `Total: ${formatPriceBob(subtotal)}`,
-  ];
-  return encodeURIComponent(lines.join("\n"));
-}
-
 export function CartSidebar() {
   const {
     items,
@@ -54,8 +36,6 @@ export function CartSidebar() {
       window.removeEventListener("keydown", onKey);
     };
   }, [isOpen, closeCart]);
-
-  const checkoutHref = `${WHATSAPP}?text=${buildWhatsAppMessage(items, subtotal)}`;
 
   return (
     <div
@@ -98,10 +78,10 @@ export function CartSidebar() {
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <p className="font-display text-2xl tracking-tight text-foreground">
-                Tu bolsa está vacía
+                Vacía
               </p>
-              <p className="mt-2 text-[11px] font-light uppercase tracking-[0.2em] text-muted">
-                Welcome to the club
+              <p className="mt-2 text-[11px] font-light uppercase tracking-[0.18em] text-muted">
+                Sumá algo a la bolsa
               </p>
               <button
                 type="button"
@@ -119,9 +99,7 @@ export function CartSidebar() {
                     href={`/producto/${item.slug}`}
                     onClick={closeCart}
                     className={`relative shrink-0 overflow-hidden bg-border ${
-                      /gift/i.test(item.title)
-                        ? "h-14 w-24"
-                        : "h-24 w-20"
+                      /gift/i.test(item.title) ? "h-14 w-24" : "h-24 w-20"
                     }`}
                   >
                     {item.image ? (
@@ -207,21 +185,23 @@ export function CartSidebar() {
                 {formatPriceBob(subtotal)}
               </span>
             </div>
-            <a
-              href={checkoutHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/checkout"
+              onClick={closeCart}
               className="flex h-12 w-full items-center justify-center bg-foreground text-[11px] font-light uppercase tracking-[0.22em] text-background transition-opacity hover:opacity-80"
             >
-              Pedir por WhatsApp
-            </a>
-            <button
-              type="button"
-              onClick={closeCart}
-              className="mt-3 w-full text-center text-[10px] font-light uppercase tracking-[0.2em] text-muted transition-opacity hover:opacity-50"
+              Ir a pagar
+            </Link>
+            <a
+              href={`${WHATSAPP}?text=${encodeURIComponent(
+                "Hola Simplicity, tengo una consulta sobre un pedido",
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 block w-full text-center text-[10px] font-light uppercase tracking-[0.2em] text-muted transition-opacity hover:opacity-50"
             >
-              Seguir comprando
-            </button>
+              Dudas por WhatsApp
+            </a>
           </div>
         ) : null}
       </aside>

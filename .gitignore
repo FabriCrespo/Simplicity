@@ -33,6 +33,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# order receipts (local uploads)
+/public/uploads/receipts/*
+!/public/uploads/receipts/.gitkeep
+/data/receipts/*
+!/data/receipts/.gitkeep
+
 # vercel
 .vercel
 

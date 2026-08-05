@@ -25,7 +25,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
           <GiftCardVisual
             amount={product.price}
             size="tile"
-            className="aspect-8/5 w-full transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+            className="aspect-8/5 w-full"
           />
           {outOfStock ? (
             <span className="absolute left-3 top-3 text-[10px] uppercase tracking-[0.18em] text-background/80">
@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
               alt={product.title}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              className="object-cover"
               onError={() => {
                 markImageBroken(image);
                 setHidden(true);

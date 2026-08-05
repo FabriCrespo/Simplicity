@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
-import { CartRoot } from "@/components/cart/CartRoot";
-import { CatalogWarmup } from "@/components/CatalogWarmup";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { SignatureEffects } from "@/components/SignatureEffects";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -49,13 +45,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col bg-background text-foreground font-sans"
         suppressHydrationWarning
       >
-        <CartRoot>
-          <CatalogWarmup />
-          <SignatureEffects />
-          <Header />
-          <main className="flex flex-1 flex-col">{children}</main>
-          <Footer />
-        </CartRoot>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

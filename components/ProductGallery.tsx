@@ -35,22 +35,36 @@ export function ProductGallery({ product }: { product: CatalogProduct }) {
     ?? images.find((_, i) => !failed.has(i));
   const outOfStock = product.type === "unavailable";
 
-  const groups = product.options as OptionGroup[];
-  const firstGroup = groups[0];
+  const groups = (product.options as OptionGroup[]) ?? [];
+  const multiGroup = groups.length > 1;
+
+  const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+  const activeGroup = multiGroup
+    ? groups[selectedGroupIndex] ?? groups[0]
+    : groups[0];
+
   const enabledChoices = useMemo(
-    () => (firstGroup?.options ?? []).filter((opt) => opt.enabled !== false),
-    [firstGroup],
+    () => (activeGroup?.options ?? []).filter((opt) => opt.enabled !== false),
+    [activeGroup],
   );
 
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
-    enabledChoices[0]?.id ?? null,
-  );
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
 
+  // Reset choice when group changes or product options load
+  const firstEnabledId = enabledChoices[0]?.id ?? null;
   const selectedOption =
     enabledChoices.find((opt) => opt.id === selectedOptionId) ??
     enabledChoices[0];
 
   const unitPrice = product.price + (selectedOption?.price ?? 0);
+
+  const optionLabel = (() => {
+    if (!selectedOption) return undefined;
+    if (multiGroup && activeGroup?.title) {
+      return `${activeGroup.title.trim()} · ${selectedOption.title.trim()}`;
+    }
+    return selectedOption.title.trim();
+  })();
 
   const handleAdd = () => {
     if (outOfStock) return;
@@ -62,7 +76,7 @@ export function ProductGallery({ product }: { product: CatalogProduct }) {
         : product.title,
       price: unitPrice,
       image: gift ? "" : (product.images[0] ?? ""),
-      optionLabel: selectedOption?.title.trim(),
+      optionLabel,
       optionId: selectedOption?.id,
     });
   };
@@ -186,14 +200,55 @@ export function ProductGallery({ product }: { product: CatalogProduct }) {
           </p>
         ) : null}
 
-        {enabledChoices.length > 0 ? (
+        {groups.length > 1 ? (
           <div className="mt-8">
             <p className="text-[10px] font-light uppercase tracking-[0.22em] text-muted">
-              {firstGroup?.title || "Opciones"}
+              {/talla/i.test(groups[0]?.title ?? "")
+                ? "Talla"
+                : "Color / variante"}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {groups.map((group, index) => {
+                const hasEnabled = (group.options ?? []).some(
+                  (o) => o.enabled !== false,
+                );
+                if (!hasEnabled) return null;
+                const selected = index === selectedGroupIndex;
+                return (
+                  <button
+                    key={`${group.title}-${index}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedGroupIndex(index);
+                      setSelectedOptionId(null);
+                    }}
+                    className={`border px-3 py-1.5 text-[11px] font-light uppercase tracking-[0.14em] transition-colors ${
+                      selected
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border text-foreground hover:border-foreground/50"
+                    }`}
+                  >
+                    {group.title?.trim() || `Opción ${index + 1}`}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        {enabledChoices.length > 0 ? (
+          <div className={groups.length > 1 ? "mt-5" : "mt-8"}>
+            <p className="text-[10px] font-light uppercase tracking-[0.22em] text-muted">
+              {groups.length > 1
+                ? /talla/i.test(activeGroup?.title ?? "")
+                  ? "Color"
+                  : "Talla"
+                : activeGroup?.title || "Opciones"}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {enabledChoices.map((opt) => {
-                const selected = opt.id === selectedOption?.id;
+                const selected =
+                  opt.id === (selectedOption?.id ?? firstEnabledId);
                 return (
                   <button
                     key={opt.id}

@@ -44009,8 +44009,8 @@
     ],
     "featured": false,
     "type": "unavailable",
-    "handleStock": false,
-    "currentStock": 0,
+    "handleStock": true,
+    "currentStock": 20,
     "position": 0,
     "options": [
       {
@@ -44040,7 +44040,7 @@
       }
     ],
     "createdAt": 1594090800000,
-    "updatedAt": 1784256320041
+    "updatedAt": 1785895946000
   },
   {
     "id": "6a35772614938900044ed2f8",

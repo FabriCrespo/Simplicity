@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Reveal } from "@/components/Reveal";
 
 const LINKS = [
   { label: "Shop", href: "/#coleccion" },
@@ -30,60 +29,51 @@ export function Footer() {
       />
 
       <div className="relative mx-auto max-w-5xl px-5 py-16 text-center sm:px-8 sm:py-20">
-        <Reveal>
+        <div className="mx-auto flex items-center justify-center gap-3">
+          <span className="h-px w-8 bg-background/25" />
+          <span className="size-1 rounded-full bg-background/40" />
+          <span className="h-px w-8 bg-background/25" />
+        </div>
 
-          <div className="mx-auto mt-7 flex items-center justify-center gap-3">
-            <span className="h-px w-8 bg-background/25" />
-            <span className="size-1 rounded-full bg-background/40" />
-            <span className="h-px w-8 bg-background/25" />
-          </div>
+        <p className="mt-6 font-display text-base italic tracking-wide text-background/50 sm:text-lg">
+          Welcome to the club, sister.
+        </p>
 
-          <p className="mt-6 font-display text-base italic tracking-wide text-background/50 sm:text-lg">
-            Welcome to the club, sister.
-          </p>
-        </Reveal>
+        <Link
+          href="/"
+          className="mt-12 inline-block transition-opacity hover:opacity-60 active:opacity-50"
+          aria-label="Simplicity — inicio"
+        >
+          <Image
+            src="/logo-wordmark.png"
+            alt="Simplicity"
+            width={200}
+            height={64}
+            className="mx-auto h-8 w-auto invert object-contain opacity-85 sm:h-9"
+          />
+        </Link>
 
-        <Reveal delayMs={100} className="mt-12">
-          <Link
-            href="/"
-            className="inline-block transition-opacity hover:opacity-60 active:opacity-50"
-            aria-label="Simplicity — inicio"
-          >
-            <Image
-              src="/logo-wordmark.png"
-              alt="Simplicity"
-              width={200}
-              height={64}
-              className="mx-auto h-8 w-auto invert object-contain opacity-85 sm:h-9"
-            />
-          </Link>
-        </Reveal>
+        <nav aria-label="Footer" className="mt-8">
+          <ul className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
+            {LINKS.map((link) => (
+              <li key={link.label}>
+                <Link
+                  href={link.href}
+                  {...(link.external
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                  className="text-[10px] font-light uppercase tracking-[0.26em] text-background/45 transition-opacity hover:text-background hover:opacity-100"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-        <Reveal delayMs={160}>
-          <nav aria-label="Footer" className="mt-8">
-            <ul className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
-              {LINKS.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    {...(link.external
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
-                    className="text-[10px] font-light uppercase tracking-[0.26em] text-background/45 transition-opacity hover:text-background hover:opacity-100"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </Reveal>
-
-        <Reveal delayMs={220}>
-          <p className="mt-12 text-[10px] font-light uppercase tracking-[0.22em] text-background/30">
-            © {year} — Cochabamba
-          </p>
-        </Reveal>
+        <p className="mt-12 text-[10px] font-light uppercase tracking-[0.22em] text-background/30">
+          © {year} — Cochabamba
+        </p>
       </div>
     </footer>
   );

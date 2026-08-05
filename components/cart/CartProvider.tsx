@@ -19,6 +19,7 @@ export type CartItem = {
   image: string;
   quantity: number;
   optionLabel?: string;
+  optionId?: string;
 };
 
 type AddItemInput = {
@@ -95,6 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           image: input.image,
           quantity: 1,
           optionLabel: input.optionLabel,
+          optionId: input.optionId,
         },
       ];
     });
